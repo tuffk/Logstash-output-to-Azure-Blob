@@ -3,14 +3,11 @@
 require 'logstash/outputs/base'
 require 'logstash/namespace'
 require 'azure'
+require 'pry'
 
 # An Logstash_Azure_Blob_Output output that does nothing.
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   config_name 'Logstash_Azure_Blob_Output'
-  ENV['AZURE_STORAGE_ACCOUNT'] ||= 'algo'
-  ENV['AZURE_STORAGE_ACCESS_KEY'] ||= 'algomas'
-  Azure.config.storage_account_name = ENV['AZURE_STORAGE_ACCOUNT']
-  Azure.config.storage_access_key = ENV['AZURE_STORAGE_ACCESS_KEY']
 
   public
 
@@ -19,10 +16,21 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   public
 
   def receive(event)
-    azure_blob_service = Azure::Blob::BlobService.new
-    container = azure_blob_service.list_contianers # FIXME: get only one container
-    blob = azure_blob_service.create_block_blob(container.name, "name #{event.name}", event.content )
-
-    'Event received'
+    begin
+      azure_login
+      azure_blob_service = Azure::Blob::BlobService.new
+      containers = azure_blob_service.list_containers
+      blob = azure_blob_service.create_block_blob(containers[0].name, event.timestamp.to_s, event.to_json)
+    rescue
+      blob = nil
+    end
+    blob
   end # def event
+
+  private
+
+  def azure_login
+    Azure.config.storage_account_name = ENV['AZURE_STORAGE_ACCOUNT']
+    Azure.config.storage_access_key = ENV['AZURE_STORAGE_ACCESS_KEY']
+  end # def azure_login
 end # class LogStash::Outputs::LogstashAzureBlobOutput
