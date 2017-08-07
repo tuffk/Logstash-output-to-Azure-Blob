@@ -6,7 +6,7 @@ require "logstash/event"
 require 'pry'
 
 describe LogStash::Outputs::LogstashAzureBlobOutput do
-  let(:sample_event) { LogStash::Event.new }
+  let(:sample_event) { LogStash::Event.new({source: "alguna", tags: ["tag1", "tag2"], fields: {field1: 1, field2: true}}) }
   let(:output) { LogStash::Outputs::LogstashAzureBlobOutput.new }
 
   before do
@@ -18,8 +18,8 @@ describe LogStash::Outputs::LogstashAzureBlobOutput do
   describe "receive message" do
     subject { output.receive(sample_event) }
     it "should return the blob sent to Azure" do
-      binding.pry
-      expect(subject).to eq("Event received")
+      md5 = Digest::MD5.base64digest(sample_event.to_json)
+      expect(subject.properties[:content_md5]).to eq(md5)
     end
   end
 end

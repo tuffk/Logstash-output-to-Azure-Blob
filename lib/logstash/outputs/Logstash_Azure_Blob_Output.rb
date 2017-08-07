@@ -16,15 +16,11 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   public
 
   def receive(event)
-    begin
-      azure_login
-      azure_blob_service = Azure::Blob::BlobService.new
-      containers = azure_blob_service.list_containers
-      blob = azure_blob_service.create_block_blob(containers[0].name, event.timestamp.to_s, event.to_json)
-    rescue
-      blob = nil
-    end
-    blob
+
+    azure_login
+    azure_blob_service = Azure::Blob::BlobService.new
+    containers = azure_blob_service.list_containers
+    blob = azure_blob_service.create_block_blob(containers[0].name, event.timestamp.to_s, event.to_json)
   end # def event
 
   private
