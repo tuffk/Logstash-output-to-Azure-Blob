@@ -1,4 +1,5 @@
 # Logstash Plugin
+[![Build Status](https://travis-ci.org/tuffk/Logstash-output-to-Azure-Blob.svg?branch=master)](https://travis-ci.org/tuffk/Logstash-output-to-Azure-Blob)
 
 This is a plugin for [Logstash](https://github.com/elastic/logstash).
 
