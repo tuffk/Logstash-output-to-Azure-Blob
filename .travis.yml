@@ -1,3 +1,10 @@
 language: ruby
 rvm:
   - jruby
+script:
+  - bundle exec rspec
+
+# deploy:
+#   on:
+#     branch: master
+#   provider: rubygems
