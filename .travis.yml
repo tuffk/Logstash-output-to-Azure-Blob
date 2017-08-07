@@ -3,6 +3,7 @@ rvm:
   - jruby-9.1.7
 install: gem install bundler
 script:
+  - bundle install
   - bundle exec rspec
 
 # deploy:
