@@ -1,6 +1,7 @@
 language: ruby
 rvm:
   - jruby-9.1.7
+install: gem install bundler
 script:
   - bundle exec rspec
 
