@@ -10,10 +10,10 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   #config_name "blob"
 
   # azure contianer
-  config :storage_account_name
+  config :storage_account_name, valdiate: :string , required: false
 
   # azure key
-  config :storage_access_key
+  config :storage_access_key, valdiate: :string , required: false
 
   public
   def register; end # def register

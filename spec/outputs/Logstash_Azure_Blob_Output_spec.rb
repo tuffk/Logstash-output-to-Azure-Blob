@@ -13,7 +13,7 @@ describe LogStash::Outputs::LogstashAzureBlobOutput do
     }
   }
   let(:sample_event) { LogStash::Event.new({source: "alguna", tags: ["tag1", "tag2"], fields: {field1: 1, field2: true}}) }
-  let(:output) { described_class.new(config_options) }
+  let(:output) { described_class.new() }
 
   before do
     output.register
