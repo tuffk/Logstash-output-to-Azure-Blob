@@ -10,7 +10,6 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   config_name 'logstash_azure_blob_output'
 
   public
-
   def register; end # def register
 
   public
