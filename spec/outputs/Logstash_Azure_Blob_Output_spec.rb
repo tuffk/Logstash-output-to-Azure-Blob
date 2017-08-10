@@ -6,8 +6,14 @@ require "logstash/event"
 require 'pry'
 
 describe LogStash::Outputs::LogstashAzureBlobOutput do
+  let(:config_options){
+    {
+      storage_account_name: ENV['AZURE_STORAGE_ACCOUNT'],
+      storage_access_key: ENV['AZURE_STORAGE_ACCESS_KEY']
+    }
+  }
   let(:sample_event) { LogStash::Event.new({source: "alguna", tags: ["tag1", "tag2"], fields: {field1: 1, field2: true}}) }
-  let(:output) { LogStash::Outputs::LogstashAzureBlobOutput.new }
+  let(:output) { described_class.new(config_options) }
 
   before do
     output.register

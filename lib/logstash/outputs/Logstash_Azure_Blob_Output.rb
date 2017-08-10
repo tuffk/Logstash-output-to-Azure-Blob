@@ -7,7 +7,13 @@ require 'pry'
 
 # An Logstash_Azure_Blob_Output output that does nothing.
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
-  config_name 'logstash_azure_blob_output'
+  #config_name "blob"
+
+  # azure contianer
+  config :storage_account_name
+
+  # azure key
+  config :storage_access_key
 
   public
   def register; end # def register
@@ -15,8 +21,8 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   public
 
   def receive(event)
-
     azure_login
+    binding.pry
     azure_blob_service = Azure::Blob::BlobService.new
     containers = azure_blob_service.list_containers
     blob = azure_blob_service.create_block_blob(containers[0].name, event.timestamp.to_s, event.to_json)
