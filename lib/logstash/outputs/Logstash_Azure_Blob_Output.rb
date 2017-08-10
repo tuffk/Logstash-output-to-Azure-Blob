@@ -7,7 +7,7 @@ require 'pry'
 
 # An Logstash_Azure_Blob_Output output that does nothing.
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
-  config_name 'Logstash_Azure_Blob_Output'
+  config_name 'logstash_azure_blob_output'
 
   public
 
