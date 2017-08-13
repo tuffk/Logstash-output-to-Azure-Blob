@@ -3,6 +3,7 @@
 require 'logstash/outputs/base'
 require 'logstash/namespace'
 require 'azure'
+require 'tmpdir'
 require 'pry'
 
 # An Logstash_Azure_Blob_Output output that does nothing.
@@ -42,6 +43,8 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   config :upload_queue_size, validate: :number, default: 2 * (Concurrent.processor_count * 0.25).ceil
   config :upload_workers_count, validate: :number, default: (Concurrent.processor_count * 0.5).ceil
   config :rotation_strategy, validate: %w[size_and_time size time], default: 'size_and_time'
+  config :tags, :validate => :array, :default => []
+  config :encoding, :validate => ["none", "gzip"], :default => "none"
 
   # elimindadas
   # canned acl
@@ -235,7 +238,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   end # def event
 
   def azure_login
-    Azure.config.storage_account_name = ENV['AZURE_STORAGE_ACCOUNT']
-    Azure.config.storage_access_key = ENV['AZURE_STORAGE_ACCESS_KEY']
+    Azure.config.storage_account_name ||= ENV['AZURE_STORAGE_ACCOUNT']
+    Azure.config.storage_access_key ||= ENV['AZURE_STORAGE_ACCESS_KEY']
   end # def azure_login
 end # class LogStash::Outputs::LogstashAzureBlobOutput
