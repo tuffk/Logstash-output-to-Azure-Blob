@@ -39,7 +39,7 @@ module LogStash
             azure_blob_service = Azure::Blob::BlobService.new
             containers = azure_blob_service.list_containers
             content = Object::File.open(file.path, "rb").read
-            blob = azure_blob_service.create_block_blob(containers[0].name, "mi_lindo_#{rand(0..9999)}", content)
+            blob = azure_blob_service.create_block_blob(containers[0].name, "#{file.ctime.iso8601}", content)
           rescue => e
             # When we get here it usually mean that LogstashAzureBlobOutput tried to do some retry by himself (default is 3)
             # When the retry limit is reached or another error happen we will wait and retry.
@@ -51,6 +51,7 @@ module LogStash
           end
 
           options[:on_complete].call(file) unless options[:on_complete].nil?
+          blob
         rescue => e
           logger.error("An error occured in the `on_complete` uploader", :exception => e.class, :message => e.message, :path => file.path, :backtrace => e.backtrace)
           raise e # reraise it since we don't deal with it now
