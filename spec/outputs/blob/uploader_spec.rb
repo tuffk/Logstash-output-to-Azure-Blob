@@ -46,9 +46,13 @@ describe LogStash::Outputs::LogstashAzureBlobOutput::Uploader do
     blob = double("blob").as_null_object
 
     expect(logger).to receive(:error).with(any_args).once
+
     expect(storage_account_name).to receive(:object).with(file.key).and_return(blob).twice
+
     expect(blob).to receive(:upload_file).with(any_args).and_raise(StandardError)
+
     expect(blob).to receive(:upload_file).with(any_args).and_return(true)
+    
 
     subject.upload(file)
   end
