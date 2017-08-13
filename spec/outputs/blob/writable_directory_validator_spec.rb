@@ -1,9 +1,9 @@
 # encoding: utf-8
 require "logstash/devutils/rspec/spec_helper"
-require "logstash/outputs/s3/writable_directory_validator"
+require "logstash/outputs/blob/writable_directory_validator"
 require "stud/temporary"
 
-describe LogStash::Outputs::S3::WritableDirectoryValidator do
+describe LogStash::Outputs::LogstashAzureBlobOutput::WritableDirectoryValidator do
   let(:temporary_directory) {  File.join(Stud::Temporary.directory, Time.now.to_i.to_s) }
 
   subject { described_class }
