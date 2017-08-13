@@ -9,7 +9,17 @@ describe LogStash::Outputs::LogstashAzureBlobOutput do
   let(:config_options){
     {
       storage_account_name: ENV['AZURE_STORAGE_ACCOUNT'],
-      storage_access_key: ENV['AZURE_STORAGE_ACCESS_KEY']
+      storage_access_key: ENV['AZURE_STORAGE_ACCESS_KEY'],
+      size_file: 5_242_880,
+      time_file: 15,
+      restore: true,
+      temporary_directory: File.join(Dir.tmpdir, 'logstash'),
+      prefix: '',
+      upload_queue_size: 2 * (Concurrent.processor_count * 0.25).ceil,
+      upload_workers_count: (Concurrent.processor_count * 0.5).ceil,
+      rotation_strategy: 'size_and_time',
+      tags: [],
+      encoding: "none"
     }
   }
   let(:sample_event) { LogStash::Event.new({source: "alguna", tags: ["tag1", "tag2"], fields: {field1: 1, field2: true}}) }
