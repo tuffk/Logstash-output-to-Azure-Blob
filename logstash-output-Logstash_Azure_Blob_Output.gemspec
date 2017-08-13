@@ -22,6 +22,4 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "logstash-codec-plain"
   s.add_runtime_dependency "azure"
   s.add_development_dependency "logstash-devutils"
-  s.add_development_dependency "pry"
-  s.add_development_dependency "pry-debugger-jruby"
 end
