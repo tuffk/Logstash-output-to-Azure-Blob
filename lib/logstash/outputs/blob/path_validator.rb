@@ -2,6 +2,8 @@
 module LogStash
   module Outputs
     class LogstashAzureBlobOutput
+      # a sub class of +LogstashAzureBlobOutput+
+      # valdiates the path for the temporary directory
       class PathValidator
         INVALID_CHARACTERS = "\^`><"
 
