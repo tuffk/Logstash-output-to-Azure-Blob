@@ -6,7 +6,56 @@ require 'azure'
 require 'tmpdir'
 require 'pry'
 
-# An Logstash_Azure_Blob_Output output that does nothing.
+# Logstash outout plugin that uploads the logs to Azure blobs.
+# The logs are stored on local temporary file which is uploaded as a blob
+# to Azure cloud
+#
+# @author Jaime Margolin
+#
+# @!attribute storage_account_name
+#   Azure storage account name (required) - found under the access keys tab
+# @!attribute storage_access_key
+#   Azure storage account access key (required) - found under the access keys tab
+# @!attribute contianer_name
+#   Blob container to uplaod blobs to (required)
+# @!attribute size_file
+#   File size to use for local tmeporary File
+# @!attribute time_file
+#   time to upload the local File
+# @!attribute restore
+#   restore after crash
+# @!attribute temporary_directory
+#   temporary directory where the temporary files will be written
+# @!attribute prefix
+#   prefix for the files to be uploaded
+# @!attribute upload queue size
+#   upload que size
+# @!attribute upload workers count
+#   how much workers for uplaod
+# @!attribute rotation_strategy
+#   what will be considered to do the tmeporary file rotation
+# @!attribute tags
+#   tags for the files
+# @!attribute encoding
+#   the encoding of the files
+# @example basic configuration
+#    output {
+#      azure {
+#        storage_account_name => "my-azure-account"    # requiered
+#        storage_access_key => "my-super-secret-key"   # requiered
+#        contianer_name => "my-contianer"              # requiered
+#        size_file => 1024*1024*5                      # optional
+#        time_file => 10                               # optional
+#        restore => true                               # optional
+#        temporary_directory => "path/to/directory"    # optional
+#        prefix => "a_prefix"                          # optional
+#        upload_queue_size => 2                        # optional
+#        upload_workers_count => 1                     # optional
+#        rotation_strategy => "size_and_time"          # optional
+#        tags => []                                    # optional
+#        encoding => "none"                            # optional
+#      }
+#    }
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   require 'logstash/outputs/blob/writable_directory_validator'
   require 'logstash/outputs/blob/path_validator'
@@ -34,6 +83,9 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   # azure key
   config :storage_access_key, valdiate: :string, required: false
 
+  # conatainer name
+  config :container_name, valdiate: :string, required: false
+
   # mamadas
   config :size_file, validate: :number, default: 1024 * 1024 * 5
   config :time_file, validate: :number, default: 15
@@ -46,19 +98,15 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   config :tags, :validate => :array, :default => []
   config :encoding, :validate => ["none", "gzip"], :default => "none"
 
-  # elimindadas
-  # canned acl
-  # server side encryption
-  # server encryptopn algorithm
-  # ssekms
-  # storage class
-  # signature version
-  # tags
-  # encoding
-  # valdiate credentails on root
+  attr_accessor :storage_account_name, :storage_access_key,:container_name,
+    :size_file,:time_file,:restore,:temporary_directory,:prefix,:upload_queue_size,
+    :upload_workers_count,:rotation_strategy,:tags,:encoding
 
   public
 
+  # initializes the +LogstashAzureBlobOutput+ instances
+  # validates all canfig parameters
+  # initializes the uploader
   def register
     unless @prefix.empty?
       unless PathValidator.valid?(prefix)
@@ -110,13 +158,14 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     rotate_if_needed(prefix_written_to)
   end
 
+  # close the tmeporary file and uploads the content to Azure
   def close
     stop_periodic_check if @rotation.needs_periodic?
 
     @logger.debug('Uploading current workspace')
 
     # The plugin has stopped receiving new events, but we still have
-    # data on disk, lets make sure it get to S3.
+    # data on disk, lets make sure it get to Azure blob.
     # If Logstash get interrupted, the `restore_from_crash` (when set to true) method will pickup
     # the content in the temporary directly and upload it.
     # This will block the shutdown until all upload are done or the use force quit.
@@ -139,6 +188,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     }
   end
 
+  # checks periodically the tmeporary file if it needs to be rotated
   def start_periodic_check
     @logger.debug("Start periodic rotation check")
 
@@ -155,13 +205,15 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     @periodic_check.shutdown
   end
 
+  # login to azure cloud using azure gem and get the contianer if exist or create
+  # the continer if it doesn't
   def blob_contianer_resource
     azure_blob_service = Azure::Blob::BlobService.new
     list = azure_blob_service.list_containers()
     list.each do |item|
-      @container = item if item.name == "jaime-test-1"
+      @container = item if item.name == container_name
     end
-    azure_blob_service.create_container("jaime-test-1") unless @container
+    azure_blob_service.create_container(container_name) unless @container
   end
 
   def rotate_if_needed(prefixes)
@@ -185,6 +237,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     end
   end
 
+  # uploads the file using the +Uploader+
   def upload_file(temp_file)
     @logger.debug("Queue for upload", :path => temp_file.path)
 
@@ -197,7 +250,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     end
   end
 
-
+  # creates an instance for the rotation strategy
   def rotation_strategy
     case @rotation_strategy
     when "size"
@@ -237,6 +290,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     blob = azure_blob_service.create_block_blob(containers[0].name, event.timestamp.to_s, event.to_json)
   end # def event
 
+  # inputs the credentials to the azure gem to log in and use azure API
   def azure_login
     Azure.config.storage_account_name ||= ENV['AZURE_STORAGE_ACCOUNT']
     Azure.config.storage_access_key ||= ENV['AZURE_STORAGE_ACCESS_KEY']
