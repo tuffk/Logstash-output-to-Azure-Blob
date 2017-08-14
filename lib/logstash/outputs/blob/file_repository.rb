@@ -9,6 +9,8 @@ ConcurrentHashMap = java.util.concurrent.ConcurrentHashMap
 module LogStash
   module Outputs
     class LogstashAzureBlobOutput
+      # sub class for +LogstashAzureBlobOutput+
+      # this class manages the tmeporary directory for the temporary files
       class FileRepository
         DEFAULT_STATE_SWEEPER_INTERVAL_SECS = 60
         DEFAULT_STALE_TIME_SECS = 15 * 60
@@ -40,6 +42,7 @@ module LogStash
           end
         end
 
+        # class for initializing the repo manager
         class FactoryInitializer
           def initialize(tags, encoding, temporary_directory, stale_time)
             @tags = tags

@@ -6,6 +6,7 @@ require "fileutils"
 module LogStash
   module Outputs
     class LogstashAzureBlobOutput
+      # a sub class of +LogstashAzureBlobOutput+
       # Wrap the actual file descriptor into an utility classe
       # It make it more OOP and easier to reason with the paths.
       class TemporaryFile
