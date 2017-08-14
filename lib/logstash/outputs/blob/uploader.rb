@@ -5,6 +5,8 @@ require "azure"
 module LogStash
   module Outputs
     class LogstashAzureBlobOutput
+      # a sub class of +LogstashAzureBlobOutput+
+      # this class uploads the files to Azure cloud
       class Uploader
         TIME_BEFORE_RETRYING_SECONDS = 1
         DEFAULT_THREADPOOL = Concurrent::ThreadPoolExecutor.new({

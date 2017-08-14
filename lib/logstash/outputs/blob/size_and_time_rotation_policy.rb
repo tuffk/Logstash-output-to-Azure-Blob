@@ -5,6 +5,8 @@ require "logstash/outputs/blob/time_rotation_policy"
 module LogStash
   module Outputs
     class LogstashAzureBlobOutput
+      # a sub class of +LogstashAzureBlobOutput+
+      # sets the rotation policy 
       class SizeAndTimeRotationPolicy
         def initialize(file_size, time_file)
           @size_strategy = SizeRotationPolicy.new(file_size)

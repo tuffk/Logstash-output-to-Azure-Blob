@@ -8,15 +8,8 @@ require "forwardable"
 module LogStash
   module Outputs
     class LogstashAzureBlobOutput
-      # Since the file can contains dynamic part, we have to handle a more local structure to
-      # allow a nice recovery from a crash.
-      #
-      # The local structure will look like this.
-      #
-      # <TEMPORARY_PATH>/<UUID>/<prefix>/ls.s3.localhost.%Y-%m-%dT%H.%m.tag_es_fb.part1.txt.gz
-      #
-      # Since the UUID should be fairly unique I can destroy the whole path when an upload is complete.
-      # I do not have to mess around to check if the other directory have file in it before destroying them.
+      # a sub class of +LogstashAzureBlobOutput+
+      # creates the temporary files to write and later upload
       class TemporaryFileFactory
         FILE_MODE = "a"
         GZIP_ENCODING = "gzip"
@@ -92,6 +85,7 @@ module LogStash
           TemporaryFile.new(key, io, path)
         end
 
+        # clas for the necoding
         class IOWrappedGzip
           extend Forwardable
 

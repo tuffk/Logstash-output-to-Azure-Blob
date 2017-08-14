@@ -2,6 +2,8 @@
 module LogStash
   module Outputs
     class LogstashAzureBlobOutput
+      # a sub class of +LogstashAzureBlobOutput+
+      # sets the rotation policy by size 
       class SizeRotationPolicy
         attr_reader :size_file
 
