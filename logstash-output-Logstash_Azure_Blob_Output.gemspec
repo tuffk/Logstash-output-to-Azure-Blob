@@ -1,5 +1,5 @@
 Gem::Specification.new do |s|
-  s.name          = 'logstash-output-Logstash_Azure_Blob_Output'
+  s.name          = 'logstash-output-azure'
   s.version       = '0.1.0'
   s.licenses      = ['Apache License (2.0)']
   s.summary       = 'Plugin for logstash to send output to Microsoft Azure Blob'

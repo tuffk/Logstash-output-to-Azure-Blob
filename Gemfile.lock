@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    logstash-output-Logstash_Azure_Blob_Output (0.1.0)
+    logstash-output-azure (0.1.0)
       azure
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -106,9 +106,6 @@ GEM
       method_source (~> 0.8.1)
       slop (~> 3.4)
       spoon (~> 0.0)
-    pry-debugger-jruby (1.1.0-java)
-      pry (>= 0.10, < 0.11)
-      ruby-debug-base (~> 0.10.4)
     public_suffix (2.0.5)
     puma (2.16.0-java)
     rack (1.6.6)
@@ -130,7 +127,6 @@ GEM
     rspec-support (3.6.0)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
-    ruby-debug-base (0.10.6-java)
     ruby-maven (3.3.12)
       ruby-maven-libs (~> 3.3.9)
     ruby-maven-libs (3.3.9)
@@ -156,9 +152,8 @@ PLATFORMS
 
 DEPENDENCIES
   logstash-devutils
-  logstash-output-Logstash_Azure_Blob_Output!
+  logstash-output-azure!
   pry
-  pry-debugger-jruby
 
 BUNDLED WITH
    1.15.3
