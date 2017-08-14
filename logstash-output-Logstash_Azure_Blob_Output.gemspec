@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
-  s.name          = 'logstash-output-Logstash_Azure_Blob_Output'
+  s.name          = 'logstash-output-azure'
   s.version       = '0.1.0'
-  s.licenses      = ['Apache License (2.0)']
+  s.licenses      = ['Apache-2.0']
   s.summary       = 'Plugin for logstash to send output to Microsoft Azure Blob'
   #s.description   = 'TODO: Write a longer description or delete this line.'
   #s.homepage      = 'TODO: Put your plugin''s website or public repo URL here.'
@@ -20,6 +20,6 @@ Gem::Specification.new do |s|
   # Gem dependencies
   s.add_runtime_dependency "logstash-core-plugin-api", "~> 2.0"
   s.add_runtime_dependency "logstash-codec-plain"
-  s.add_runtime_dependency "azure"
+  s.add_runtime_dependency "azure", "~> 0.7"
   s.add_development_dependency "logstash-devutils"
 end
