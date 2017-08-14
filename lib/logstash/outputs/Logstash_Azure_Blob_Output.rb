@@ -26,7 +26,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
                                                                    :fallback_policy => :caller_runs
                                                                  })
 
-  config_name 'blob'
+  config_name 'azure'
 
   # azure contianer
   config :storage_account_name, valdiate: :string, required: false
