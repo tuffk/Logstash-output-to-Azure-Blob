@@ -2,6 +2,8 @@
 module LogStash
   module Outputs
     class LogstashAzureBlobOutput
+      # a sub class of +LogstashAzureBlobOutput+
+      # sets the policy for time rotation
       class TimeRotationPolicy
         attr_reader :time_file
 
