@@ -40,7 +40,7 @@ require 'pry'
 #   the encoding of the files
 # @example basic configuration
 #    output {
-#      azure {
+#      logstash_output_azure {
 #        storage_account_name => "my-azure-account"    # requiered
 #        storage_access_key => "my-super-secret-key"   # requiered
 #        contianer_name => "my-contianer"              # requiered
@@ -57,6 +57,10 @@ require 'pry'
 #      }
 #    }
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
+  # name for the namespace under output for logstash configuration
+  config_name "logstash_output_azure"
+
+
   require 'logstash/outputs/blob/writable_directory_validator'
   require 'logstash/outputs/blob/path_validator'
   require 'logstash/outputs/blob/size_rotation_policy'
@@ -75,7 +79,6 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
                                                                    :fallback_policy => :caller_runs
                                                                  })
 
-  config_name 'azure'
 
   # azure contianer
   config :storage_account_name, valdiate: :string, required: false
