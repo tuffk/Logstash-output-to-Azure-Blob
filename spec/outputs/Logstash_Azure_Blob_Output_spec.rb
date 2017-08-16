@@ -26,10 +26,15 @@ describe LogStash::Outputs::LogstashAzureBlobOutput do
   end
   let(:sample_event) { LogStash::Event.new(source: 'alguna', tags: %w[tag1 tag2], fields: { field1: 1, field2: true }) }
 
-  let(:output) { described_class.new() }
+  # let(:output) { described_class.new() }
+  #
+  # before do
+  #   output.register
+  # end
 
-  before do
-    output.register
+  it 'should create' do
+    blober = described_class.new
+    blober.register
   end
 
   describe 'receive message' do

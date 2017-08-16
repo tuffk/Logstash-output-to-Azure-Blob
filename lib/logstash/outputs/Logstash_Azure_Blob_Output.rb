@@ -87,7 +87,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   config :storage_access_key, valdiate: :string, required: false, default: ENV['AZURE_STORAGE_ACCESS_KEY']
 
   # conatainer name
-  config :container_name, valdiate: :string, required: false, default: 'anonymus_contianer'
+  config :container_name, valdiate: :string, required: false, default: ENV['AZURE_CONTIANER_NAME']
 
   # mamadas
   config :size_file, validate: :number, default: 1024 * 1024 * 5
@@ -211,11 +211,14 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   # login to azure cloud using azure gem and get the contianer if exist or create
   # the continer if it doesn't
   def blob_contianer_resource
+    Azure.config.storage_account_name = storage_account_name
+    Azure.config.storage_access_key = storage_access_key
     azure_blob_service = Azure::Blob::BlobService.new
     list = azure_blob_service.list_containers()
     list.each do |item|
       @container = item if item.name == container_name
     end
+    
     azure_blob_service.create_container(container_name) unless @container
   end
 
@@ -295,7 +298,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
   # inputs the credentials to the azure gem to log in and use azure API
   def azure_login
-    Azure.config.storage_account_name ||= ENV['AZURE_STORAGE_ACCOUNT']
-    Azure.config.storage_access_key ||= ENV['AZURE_STORAGE_ACCESS_KEY']
+    Azure.config.storage_account_name ||= storage_account_name
+    Azure.config.storage_access_key ||= storage_access_key
   end # def azure_login
 end # class LogStash::Outputs::LogstashAzureBlobOutput
