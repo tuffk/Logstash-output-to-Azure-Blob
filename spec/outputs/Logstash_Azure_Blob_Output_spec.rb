@@ -38,16 +38,6 @@ describe LogStash::Outputs::LogstashAzureBlobOutput do
     expect(blober.storage_account_name).not_to be_nil
     expect(blober.storage_access_key).not_to be_nil
     expect(blober.container_name).not_to be_nil
-    expect(blober.size_file).not_to be_nil
-    expect(blober.time_file).not_to be_nil
-    expect(blober.restore).not_to be_nil
-    expect(blober.temporary_directory).not_to be_nil
-    expect(blober.prefix).not_to be_nil
-    expect(blober.upload_queue_size).not_to be_nil
-    expect(blober.upload_workers_count).not_to be_nil
-    expect(blober.rotation_strategy).not_to be_nil
-    expect(blober.tags).not_to be_nil
-    expect(blober.encoding).not_to be_nil
   end
 
   describe 'receive message' do
