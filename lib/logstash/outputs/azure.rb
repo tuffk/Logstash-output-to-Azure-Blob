@@ -58,7 +58,7 @@ require 'pry'
 #    }
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   # name for the namespace under output for logstash configuration
-  config_name "logstash_output_azure"
+  config_name "azure"
 
 
   require 'logstash/outputs/blob/writable_directory_validator'
