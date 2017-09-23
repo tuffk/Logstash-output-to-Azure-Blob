@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    logstash-output-azure (0.1.2)
+    logstash-output-azure (0.3.0)
       azure (~> 0.7)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
