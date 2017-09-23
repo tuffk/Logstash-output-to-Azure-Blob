@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 require 'logstash/devutils/rspec/spec_helper'
-require 'logstash/outputs/Logstash_Azure_Blob_Output'
+require 'logstash/outputs/azure'
 require 'logstash/codecs/plain'
 require 'logstash/event'
 require 'tmpdir'
