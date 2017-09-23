@@ -3,7 +3,7 @@ rvm:
 - jruby-9.1.7
 install: gem install bundler
 script:
-- bundle install
+- bundle install --quiet
 - bundle exec rspec
 deploy:
   provider: rubygems
