@@ -81,13 +81,13 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
 
   # azure contianer
-  config :storage_account_name, validate: :string, required: true
+  config :storage_account_name, validate: :string, required: false, default: ENV['AZURE_STORAGE_ACCOUNT']
 
   # azure key
-  config :storage_access_key, validate: :string, required: true
+  config :storage_access_key, validate: :string, required: false, default: ENV['AZURE_STORAGE_ACCESS_KEY']
 
   # conatainer name
-  config :container_name, validate: :string, required: true
+  config :container_name, validate: :string, required: false, default: ENV['CONTAINER_NAME']
 
   # mamadas
   config :size_file, validate: :number, default: 1024 * 1024 * 5
