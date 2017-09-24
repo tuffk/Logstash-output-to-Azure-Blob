@@ -53,7 +53,7 @@ module LogStash
         end
 
         def current_time
-          Time.now.utc
+          Time.now.strftime(STRFTIME)
         end
 
         def generate_name
