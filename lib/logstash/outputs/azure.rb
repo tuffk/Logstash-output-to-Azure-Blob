@@ -81,13 +81,13 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
 
   # azure contianer
-  config :storage_account_name, validate: :string, required: false, default: ENV['AZURE_STORAGE_ACCOUNT']
+  config :storage_account_name, validate: :string, required: true
 
   # azure key
-  config :storage_access_key, validate: :string, required: false, default: ENV['AZURE_STORAGE_ACCESS_KEY']
+  config :storage_access_key, validate: :string, required: true
 
   # conatainer name
-  config :container_name, validate: :string, required: false, default: ENV['AZURE_CONTIANER_NAME']
+  config :container_name, validate: :string, required: true
 
   # mamadas
   config :size_file, validate: :number, default: 1024 * 1024 * 5
@@ -134,7 +134,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
                                                   max_queue: @upload_queue_size,
                                                   fallback_policy: :caller_runs)
 
-    @uploader = Uploader.new(blob_contianer_resource, @logger, executor)
+    @uploader = Uploader.new(blob_container_resource, container_name, @logger, executor)
 
     restore_from_crash if @restore
     start_periodic_check if @rotation.needs_periodic?
@@ -210,7 +210,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
   # login to azure cloud using azure gem and get the contianer if exist or create
   # the continer if it doesn't
-  def blob_contianer_resource
+  def blob_container_resource
     Azure.config.storage_account_name = storage_account_name
     Azure.config.storage_access_key = storage_access_key
     azure_blob_service = Azure::Blob::BlobService.new
@@ -220,6 +220,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     end
     
     azure_blob_service.create_container(container_name) unless @container
+    return azure_blob_service
   end
 
   def rotate_if_needed(prefixes)
@@ -274,7 +275,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   end
 
   def restore_from_crash
-    @crash_uploader = Uploader.new(blob_contianer_resource, @logger, CRASH_RECOVERY_THREADPOOL)
+    @crash_uploader = Uploader.new(blob_container_resource, @logger, CRASH_RECOVERY_THREADPOOL)
 
     temp_folder_path = Pathname.new(@temporary_directory)
     Dir.glob(::File.join(@temporary_directory, "**/*"))
