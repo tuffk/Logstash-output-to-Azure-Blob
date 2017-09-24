@@ -37,7 +37,9 @@ module LogStash
 
           begin
             content = Object::File.open(file.path, "rb").read
-	    blob = blob_account.create_block_blob(container_name, "#{file.ctime.iso8601}", content)
+	    filename = Object::File.basename file.path
+	    puts filename
+	    blob = blob_account.create_block_blob(container_name, filename, content)
 	    puts blob.name
           rescue => e
             # When we get here it usually mean that LogstashAzureBlobOutput tried to do some retry by himself (default is 3)
