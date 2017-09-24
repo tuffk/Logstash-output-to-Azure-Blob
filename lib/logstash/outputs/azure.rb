@@ -81,13 +81,13 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
 
   # azure contianer
-  config :storage_account_name, validate: :string, required: true
+  config :storage_account_name, validate: :string, required: false, default: ENV[AZURE_STORAGE_ACCOUNT]
 
   # azure key
-  config :storage_access_key, validate: :string, required: true
+  config :storage_access_key, validate: :string, required: false, default: ENV[AZURE_STORAGE_ACCESS_KEY]
 
   # conatainer name
-  config :container_name, validate: :string, required: true
+  config :container_name, validate: :string, required: false, default: ENV[CONTAINER_NAME]
 
   # mamadas
   config :size_file, validate: :number, default: 1024 * 1024 * 5
@@ -275,7 +275,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   end
 
   def restore_from_crash
-    @crash_uploader = Uploader.new(blob_container_resource, @logger, CRASH_RECOVERY_THREADPOOL)
+    @crash_uploader = Uploader.new(blob_container_resource, container_name, @logger, CRASH_RECOVERY_THREADPOOL)
 
     temp_folder_path = Pathname.new(@temporary_directory)
     Dir.glob(::File.join(@temporary_directory, "**/*"))
