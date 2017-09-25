@@ -17,7 +17,7 @@ deploy:
 env:
   AZURE_STORAGE_ACCOUNT = "logstashoutput"
   AZURE_STORAGE_ACCESS_KEY = "xTixLHymnOpdgWfoFjlACDik0KhxIAnRfqBPS6+VrS5JjqZ/7CB63gP+tItfldVE2oDHvlh6aKVyaOu1s347lg=="
-  CONTAINER_NAME = "test2"
+  CONTAINER_NAME = "test"
 
 notifications:
   email: false
