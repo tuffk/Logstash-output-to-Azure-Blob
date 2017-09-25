@@ -1,5 +1,5 @@
 # encoding: utf-8
-require "logstash/outputs/Logstash_Azure_Blob_Output"
+require "logstash/outputs/azure"
 require "stud/temporary"
 require "fileutils"
 require_relative "../../spec_helper"

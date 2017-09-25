@@ -57,7 +57,7 @@ module LogStash
         end
 
         def generate_name
-          filename = "ls.s3.#{SecureRandom.uuid}.#{current_time}"
+          filename = "#{current_time}.#{SecureRandom.uuid}"
 
           if tags.size > 0
             "#{filename}.tag_#{tags.join('.')}.part#{counter}.#{extension}"

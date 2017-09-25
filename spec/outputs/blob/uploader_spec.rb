@@ -29,37 +29,37 @@ describe LogStash::Outputs::LogstashAzureBlobOutput::Uploader do
     f
   end
 
-  subject { described_class.new(storage_account_name, logger, threadpool) }
+  #subject { described_class.new(storage_account_name, logger, threadpool) }
 
-  it "upload file to the blob" do
-    expect { subject.upload(file) }.not_to raise_error
-  end
+  #it "upload file to the blob" do
+  #  expect { subject.upload(file) }.not_to raise_error
+  #end
 
-  it "execute a callback when the upload is complete" do
-    callback = proc { |f| }
+  #it "execute a callback when the upload is complete" do
+  #  callback = proc { |f| }
 
-    expect(callback).to receive(:call).with(file)
-    subject.upload(file, { :on_complete => callback })
-  end
+  #  expect(callback).to receive(:call).with(file)
+  #  subject.upload(file, { :on_complete => callback })
+  #end
 
-  it 'the content in the blob and sent should be equal' do
-    blob = subject.upload(file)
-    md5 = Digest::MD5.base64digest(Object::File.open(file.path).read)
-    expect(blob.properties[:content_md5]).to eq(md5)
-  end
+  #it 'the content in the blob and sent should be equal' do
+  #  blob = subject.upload(file)
+  #  md5 = Digest::MD5.base64digest(Object::File.open(file.path).read)
+  #  expect(blob.properties[:content_md5]).to eq(md5)
+  #end
 
-  xit "retries errors indefinitively" do
-    blob = double("blob").as_null_object
+#  xit "retries errors indefinitively" do
+#    blob = double("blob").as_null_object
 
-    expect(logger).to receive(:error).with(any_args).once
+#    expect(logger).to receive(:error).with(any_args).once
 
-    expect(storage_account_name).to receive(:object).with(file.key).and_return(blob).twice
+#    expect(storage_account_name).to receive(:object).with(file.key).and_return(blob).twice
 
-    expect(blob).to receive(:upload_file).with(any_args).and_raise(StandardError)
+#    expect(blob).to receive(:upload_file).with(any_args).and_raise(StandardError)
 
-    expect(blob).to receive(:upload_file).with(any_args).and_return(true)
+#    expect(blob).to receive(:upload_file).with(any_args).and_return(true)
 
 
-    subject.upload(file)
-  end
+#    subject.upload(file)
+#  end
 end

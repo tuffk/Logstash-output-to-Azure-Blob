@@ -40,7 +40,7 @@ require 'pry'
 #   the encoding of the files
 # @example basic configuration
 #    output {
-#      azure {
+#      logstash_output_azure {
 #        storage_account_name => "my-azure-account"    # requiered
 #        storage_access_key => "my-super-secret-key"   # requiered
 #        contianer_name => "my-contianer"              # requiered
@@ -57,6 +57,10 @@ require 'pry'
 #      }
 #    }
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
+  # name for the namespace under output for logstash configuration
+  config_name "azure"
+
+
   require 'logstash/outputs/blob/writable_directory_validator'
   require 'logstash/outputs/blob/path_validator'
   require 'logstash/outputs/blob/size_rotation_policy'
@@ -75,16 +79,15 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
                                                                    :fallback_policy => :caller_runs
                                                                  })
 
-  config_name 'azure'
 
   # azure contianer
-  config :storage_account_name, valdiate: :string, required: false
+  config :storage_account_name, validate: :string, required: false
 
   # azure key
-  config :storage_access_key, valdiate: :string, required: false
+  config :storage_access_key, validate: :string, required: false
 
   # conatainer name
-  config :container_name, valdiate: :string, required: false
+  config :container_name, validate: :string, required: false
 
   # mamadas
   config :size_file, validate: :number, default: 1024 * 1024 * 5
@@ -131,7 +134,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
                                                   max_queue: @upload_queue_size,
                                                   fallback_policy: :caller_runs)
 
-    @uploader = Uploader.new(blob_contianer_resource, @logger, executor)
+    @uploader = Uploader.new(blob_container_resource, container_name, @logger, executor)
 
     restore_from_crash if @restore
     start_periodic_check if @rotation.needs_periodic?
@@ -207,13 +210,17 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
   # login to azure cloud using azure gem and get the contianer if exist or create
   # the continer if it doesn't
-  def blob_contianer_resource
+  def blob_container_resource
+    Azure.config.storage_account_name = storage_account_name
+    Azure.config.storage_access_key = storage_access_key
     azure_blob_service = Azure::Blob::BlobService.new
     list = azure_blob_service.list_containers()
     list.each do |item|
       @container = item if item.name == container_name
     end
+
     azure_blob_service.create_container(container_name) unless @container
+    return azure_blob_service
   end
 
   def rotate_if_needed(prefixes)
@@ -268,7 +275,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   end
 
   def restore_from_crash
-    @crash_uploader = Uploader.new(blob_contianer_resource, @logger, CRASH_RECOVERY_THREADPOOL)
+    @crash_uploader = Uploader.new(blob_container_resource, container_name, @logger, CRASH_RECOVERY_THREADPOOL)
 
     temp_folder_path = Pathname.new(@temporary_directory)
     Dir.glob(::File.join(@temporary_directory, "**/*"))
@@ -292,7 +299,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
   # inputs the credentials to the azure gem to log in and use azure API
   def azure_login
-    Azure.config.storage_account_name ||= ENV['AZURE_STORAGE_ACCOUNT']
-    Azure.config.storage_access_key ||= ENV['AZURE_STORAGE_ACCESS_KEY']
+    Azure.config.storage_account_name ||= storage_account_name
+    Azure.config.storage_access_key ||= storage_access_key
   end # def azure_login
 end # class LogStash::Outputs::LogstashAzureBlobOutput
