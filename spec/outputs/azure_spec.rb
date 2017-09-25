@@ -27,25 +27,25 @@ describe LogStash::Outputs::LogstashAzureBlobOutput do
   end
   let(:sample_event) { LogStash::Event.new(source: 'alguna', tags: %w[tag1 tag2], fields: { field1: 1, field2: true }) }
 
-  # let(:output) { described_class.new() }
-  #
-  # before do
-  #   output.register
-  # end
+#   let(:output) { described_class.new() }
+  
+ #  before do
+ #    output.register
+ #  end
 
-  it 'should create' do
-    blober = described_class.new
-    blober.register
-    expect(blober.storage_account_name).not_to be_nil
-    expect(blober.storage_access_key).not_to be_nil
-    expect(blober.container_name).not_to be_nil
-  end
+ # it 'should create' do
+ #   blober = described_class.new
+ #   blober.register
+ #   expect(blober.storage_account_name).not_to be_nil
+ #   expect(blober.storage_access_key).not_to be_nil
+ #   expect(blober.container_name).not_to be_nil
+ # end
 
   describe 'receive message' do
     subject { output.receive(sample_event) }
-    xit 'should return the blob sent to Azure' do
-      md5 = Digest::MD5.base64digest(sample_event.to_json)
-      expect(subject.properties[:content_md5]).to eq(md5)
-    end
+    #xit 'should return the blob sent to Azure' do
+    #  md5 = Digest::MD5.base64digest(sample_event.to_json)
+    #  expect(subject.properties[:content_md5]).to eq(md5)
+    #end
   end
 end
