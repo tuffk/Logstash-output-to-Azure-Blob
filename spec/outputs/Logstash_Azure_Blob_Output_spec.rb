@@ -12,6 +12,7 @@ describe LogStash::Outputs::LogstashAzureBlobOutput do
     {
       storage_account_name: ENV['AZURE_STORAGE_ACCOUNT'],
       storage_access_key: ENV['AZURE_STORAGE_ACCESS_KEY'],
+      container_name: "test",
       size_file: 5242880,
       time_file: 15,
       restore: true,

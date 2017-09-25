@@ -1,8 +1,8 @@
 # encoding: utf-8
 shared_context "setup plugin" do
   let(:temporary_directory) { Stud::Temporary.pathname }
-  let(:storage_account_name) { ENV["AWS_LOGSTASH_TEST_BUCKET"] }
-  let(:storage_access_key) {  ENV["AWS_ACCESS_KEY_ID"] }
+  let(:storage_account_name) { ENV["AZURE_STORAGE_ACCOUNT"] }
+  let(:storage_access_key) {  ENV["AZURE_STORAGE_ACCESS_KEY"] }
   let(:size_file) { 100 }
   let(:time_file) { 100 }
   let(:tags) { [] }
