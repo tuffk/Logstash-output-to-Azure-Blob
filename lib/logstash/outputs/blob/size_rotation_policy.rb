@@ -6,7 +6,7 @@ module LogStash
       # sets the rotation policy by size 
       class SizeRotationPolicy
         attr_reader :size_file
-
+	# initialize the class
         def initialize(size_file)
           if size_file <= 0
             raise LogStash::ConfigurationError, "`size_file` need to be greather than 0"
@@ -14,11 +14,12 @@ module LogStash
 
           @size_file = size_file
         end
-
+	
+	# boolean method to check if it is time to rotate
         def rotate?(file)
           file.size >= size_file
         end
-
+	# boolean method
         def needs_periodic?
           false
         end

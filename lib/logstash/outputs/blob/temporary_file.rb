@@ -15,7 +15,8 @@ module LogStash
         def_delegators :@fd, :path, :write, :close, :fsync
 
         attr_reader :fd
-
+	
+	# initialize the class
         def initialize(key, fd, temp_path)
           @fd = fd
           @key = key
@@ -23,14 +24,17 @@ module LogStash
           @created_at = Time.now
         end
 
+	# gets the created at time
         def ctime
           @created_at
         end
-
+	
+	# gets path to temporary directory
         def temp_path
           @temp_path
         end
-
+	
+	# gets the size of file
         def size
           # Use the fd size to get the accurate result,
           # so we dont have to deal with fsync
@@ -42,6 +46,7 @@ module LogStash
           end
         end
 
+	# gets the key
         def key
           @key.gsub(/^\//, "")
         end
@@ -55,10 +60,14 @@ module LogStash
           FileUtils.rm_r(@temp_path, :secure => true)
         end
 
+	# boolean method to determine if the file is empty
         def empty?
           size == 0
         end
 
+	# creates the temporary file in an existing temporary directory from existing file
+	# @param file_path [String] path to the file
+	# @param temporary_folder [String] path to the temporary folder
         def self.create_from_existing_file(file_path, temporary_folder)
           key_parts = Pathname.new(file_path).relative_path_from(temporary_folder).to_s.split(::File::SEPARATOR)
 
