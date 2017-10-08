@@ -41,9 +41,9 @@ require 'pry'
 # @example basic configuration
 #    output {
 #      logstash_output_azure {
-#        storage_account_name => "my-azure-account"    # requiered
-#        storage_access_key => "my-super-secret-key"   # requiered
-#        contianer_name => "my-contianer"              # requiered
+#        storage_account_name => "my-azure-account"    # required
+#        storage_access_key => "my-super-secret-key"   # required
+#        contianer_name => "my-contianer"              # required
 #        size_file => 1024*1024*5                      # optional
 #        time_file => 10                               # optional
 #        restore => true                               # optional
@@ -108,7 +108,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   public
 
   # initializes the +LogstashAzureBlobOutput+ instances
-  # validates all canfig parameters
+  # validates all config parameters
   # initializes the uploader
   def register
     unless @prefix.empty?
@@ -140,6 +140,8 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     start_periodic_check if @rotation.needs_periodic?
   end # def register
 
+  # Receives multiple events and check if there is space in temporary directory
+  # @param events_and_encoded [Object]
   def multi_receive_encoded(events_and_encoded)
     prefix_written_to = Set.new
 
@@ -152,7 +154,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
         # The output should stop accepting new events coming in, since it cannot do anything with them anymore.
         # Log the error and rethrow it.
       rescue Errno::ENOSPC => e
-        @logger.error('S3: No space left in temporary directory', temporary_directory: @temporary_directory)
+        @logger.error('Azure: No space left in temporary directory', temporary_directory: @temporary_directory)
         raise e
       end
     end
@@ -161,7 +163,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     rotate_if_needed(prefix_written_to)
   end
 
-  # close the tmeporary file and uploads the content to Azure
+  # close the temporary file and uploads the content to Azure
   def close
     stop_periodic_check if @rotation.needs_periodic?
 
@@ -182,14 +184,17 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     @crash_uploader.stop if @restore # we might have still work to do for recovery so wait until we are done
   end
 
+
+  # Validates and normalize prefix key
+  # @param prefix_key [String]
   def normalize_key(prefix_key)
     prefix_key.gsub(PathValidator.matches_re, PREFIX_KEY_NORMALIZE_CHARACTER)
   end
 
-  def upload_options
-    {
-    }
-  end
+ # def upload_options
+ #   {
+ #   }
+ # end
 
   # checks periodically the tmeporary file if it needs to be rotated
   def start_periodic_check
@@ -208,8 +213,8 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     @periodic_check.shutdown
   end
 
-  # login to azure cloud using azure gem and get the contianer if exist or create
-  # the continer if it doesn't
+  # login to azure cloud using azure gem and create the contianer if it doesn't exist
+  # @return [Object] the azure_blob_service object, which is the endpoint to azure gem
   def blob_container_resource
     Azure.config.storage_account_name = storage_account_name
     Azure.config.storage_access_key = storage_access_key
@@ -222,7 +227,9 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     azure_blob_service.create_container(container_name) unless @container
     return azure_blob_service
   end
-
+  
+  # check if it needs to rotate according to rotation policy and rotates it if it needs
+  # @param prefixes [String] 
   def rotate_if_needed(prefixes)
     prefixes.each do |prefix|
       # Each file access is thread safe,
@@ -269,11 +276,14 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     end
   end
 
+  # Cleans the temporary files after it is uploaded to azure blob
   def clean_temporary_file(file)
     @logger.debug("Removing temporary file", :file => file.path)
     file.delete!
   end
 
+
+  # uploads files if there was a crash before
   def restore_from_crash
     @crash_uploader = Uploader.new(blob_container_resource, container_name, @logger, CRASH_RECOVERY_THREADPOOL)
 
@@ -289,7 +299,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
 
   public
-
+  #endpoint to azure blob storage
   def receive(event)
     azure_login
     azure_blob_service = Azure::Blob::BlobService.new
