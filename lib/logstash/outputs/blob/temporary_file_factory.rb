@@ -18,7 +18,8 @@ module LogStash
         STRFTIME = "%Y-%m-%dT%H.%M"
 
         attr_accessor :counter, :tags, :prefix, :encoding, :temporary_directory, :current
-
+        
+        # initialize the class
         def initialize(prefix, tags, encoding, temporary_directory)
           @counter = 0
           @prefix = prefix
@@ -31,6 +32,7 @@ module LogStash
           rotate!
         end
 
+	# do the rotation
         def rotate!
           @lock.synchronize {
             @current = new_file
@@ -40,22 +42,27 @@ module LogStash
         end
 
         private
+	# if it is not gzip ecoding, then it is txt extension
         def extension
           gzip? ? GZIP_EXTENSION : TXT_EXTENSION
         end
-
+	
+	# boolean method to check if its gzip encoding
         def gzip?
           encoding == GZIP_ENCODING
         end
 
+	# increment the counter in 1 unit
         def increment_counter
           @counter += 1
         end
 
+	# gets the current time 
         def current_time
           Time.now.strftime(STRFTIME)
         end
 
+	# method that generate the name of the file to be saved in blob storage
         def generate_name
           filename = "#{current_time}.#{SecureRandom.uuid}"
 
@@ -66,6 +73,7 @@ module LogStash
           end
         end
 
+	# create the file to be saved in blob storage
         def new_file
           uuid = SecureRandom.uuid
           name = generate_name
@@ -85,22 +93,25 @@ module LogStash
           TemporaryFile.new(key, io, path)
         end
 
-        # clas for the necoding
+        # clas for the encoding
         class IOWrappedGzip
           extend Forwardable
 
           def_delegators :@gzip_writer, :write, :close
           attr_reader :file_io, :gzip_writer
 
+	  # initialize the class for encoding
           def initialize(file_io)
             @file_io = file_io
             @gzip_writer = Zlib::GzipWriter.open(file_io)
           end
-
+	  
+	  # gets the path
           def path
             @gzip_writer.to_io.path
           end
 
+	  # gets the file size
           def size
             # to get the current file size
             if @gzip_writer.pos == 0
@@ -113,6 +124,7 @@ module LogStash
             end
           end
 
+	  # gets the fsync
           def fsync
             @gzip_writer.to_io.fsync
           end

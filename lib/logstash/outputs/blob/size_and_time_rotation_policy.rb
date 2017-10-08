@@ -8,15 +8,17 @@ module LogStash
       # a sub class of +LogstashAzureBlobOutput+
       # sets the rotation policy 
       class SizeAndTimeRotationPolicy
+	# initialize the class
         def initialize(file_size, time_file)
           @size_strategy = SizeRotationPolicy.new(file_size)
           @time_strategy = TimeRotationPolicy.new(time_file)
         end
-
+	# check if it is time to rotate
         def rotate?(file)
           @size_strategy.rotate?(file) || @time_strategy.rotate?(file)
         end
-
+	
+ 	# boolean method
         def needs_periodic?
           true
         end
