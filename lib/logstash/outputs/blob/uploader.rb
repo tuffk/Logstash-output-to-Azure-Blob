@@ -18,6 +18,9 @@ module LogStash
 	
 	attr_accessor :upload_options, :logger, :container_name, :blob_account
 	
+	#Initializes the class 
+	# @param blob_account [Object] endpoint to azure gem 
+        # @param container_name [String] name of the container in azure blob, at this point, if it doesn't exist, it was already created
         def initialize(blob_account, container_name , logger, threadpool = DEFAULT_THREADPOOL)
           @blob_account = blob_account
           @workers_pool = threadpool
@@ -25,6 +28,7 @@ module LogStash
           @container_name = container_name	
 	end
 
+	#Create threads to upload the file to the container
         def upload_async(file, options = {})
           @workers_pool.post do
             LogStash::Util.set_thread_name("LogstashAzureBlobOutput output uploader, file: #{file.path}")
@@ -32,6 +36,7 @@ module LogStash
           end
         end
 
+	#Uploads the file to the container
         def upload(file, options = {})
           upload_options = options.fetch(:upload_options, {})
 
@@ -57,7 +62,8 @@ module LogStash
           logger.error("An error occured in the `on_complete` uploader", :exception => e.class, :message => e.message, :path => file.path, :backtrace => e.backtrace)
           raise e # reraise it since we don't deal with it now
         end
-
+	
+	# stop threads
         def stop
           @workers_pool.shutdown
           @workers_pool.wait_for_termination(nil) # block until its done
