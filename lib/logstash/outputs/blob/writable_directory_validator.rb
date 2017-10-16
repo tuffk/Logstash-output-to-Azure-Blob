@@ -6,7 +6,9 @@ module LogStash
       # validates that the specified tmeporary directory can be accesed with
       # write permission
       class WritableDirectoryValidator
-        def self.valid?(path)
+         # Checks if a path is valid
+ 	 # @param path [String] String that represents the path
+	 def self.valid?(path)
           begin
             FileUtils.mkdir_p(path) unless Dir.exist?(path)
             ::File.writable?(path)
