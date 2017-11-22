@@ -1,9 +1,8 @@
-# encoding: utf-8
-require "socket"
-require "securerandom"
-require "fileutils"
-require "zlib"
-require "forwardable"
+require 'socket'
+require 'securerandom'
+require 'fileutils'
+require 'zlib'
+require 'forwardable'
 
 module LogStash
   module Outputs
@@ -11,14 +10,14 @@ module LogStash
       # a sub class of +LogstashAzureBlobOutput+
       # creates the temporary files to write and later upload
       class TemporaryFileFactory
-        FILE_MODE = "a"
-        GZIP_ENCODING = "gzip"
-        GZIP_EXTENSION = "txt.gz"
-        TXT_EXTENSION = "txt"
-        STRFTIME = "%Y-%m-%dT%H.%M"
+        FILE_MODE = 'a'.freeze
+        GZIP_ENCODING = 'gzip'.freeze
+        GZIP_EXTENSION = 'txt.gz'.freeze
+        TXT_EXTENSION = 'txt'.freeze
+        STRFTIME = '%Y-%m-%dT%H.%M'.freeze
 
         attr_accessor :counter, :tags, :prefix, :encoding, :temporary_directory, :current
-        
+
         # initialize the class
         def initialize(prefix, tags, encoding, temporary_directory)
           @counter = 0
@@ -32,48 +31,49 @@ module LogStash
           rotate!
         end
 
-	# do the rotation
+        # do the rotation
         def rotate!
-          @lock.synchronize {
+          @lock.synchronize do
             @current = new_file
             increment_counter
             @current
-          }
+          end
         end
 
         private
-	# if it is not gzip ecoding, then it is txt extension
+
+        # if it is not gzip ecoding, then it is txt extension
         def extension
           gzip? ? GZIP_EXTENSION : TXT_EXTENSION
         end
-	
-	# boolean method to check if its gzip encoding
+
+        # boolean method to check if its gzip encoding
         def gzip?
           encoding == GZIP_ENCODING
         end
 
-	# increment the counter in 1 unit
+        # increment the counter in 1 unit
         def increment_counter
           @counter += 1
         end
 
-	# gets the current time 
+        # gets the current time
         def current_time
           Time.now.strftime(STRFTIME)
         end
 
-	# method that generate the name of the file to be saved in blob storage
+        # method that generate the name of the file to be saved in blob storage
         def generate_name
           filename = "#{current_time}.#{SecureRandom.uuid}"
 
-          if tags.size > 0
+          if !tags.empty?
             "#{filename}.tag_#{tags.join('.')}.part#{counter}.#{extension}"
           else
             "#{filename}.part#{counter}.#{extension}"
           end
         end
 
-	# create the file to be saved in blob storage
+        # create the file to be saved in blob storage
         def new_file
           uuid = SecureRandom.uuid
           name = generate_name
@@ -100,21 +100,21 @@ module LogStash
           def_delegators :@gzip_writer, :write, :close
           attr_reader :file_io, :gzip_writer
 
-	  # initialize the class for encoding
+          # initialize the class for encoding
           def initialize(file_io)
             @file_io = file_io
             @gzip_writer = Zlib::GzipWriter.open(file_io)
           end
-	  
-	  # gets the path
+
+          # gets the path
           def path
             @gzip_writer.to_io.path
           end
 
-	  # gets the file size
+          # gets the file size
           def size
             # to get the current file size
-            if @gzip_writer.pos == 0
+            if @gzip_writer.pos.zero?
               # Ensure a zero file size is returned when nothing has
               # yet been written to the gzip file.
               0
@@ -124,7 +124,7 @@ module LogStash
             end
           end
 
-	  # gets the fsync
+          # gets the fsync
           def fsync
             @gzip_writer.to_io.fsync
           end

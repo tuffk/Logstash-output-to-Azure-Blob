@@ -1,10 +1,7 @@
-# encoding: utf-8
-
 require 'logstash/outputs/base'
 require 'logstash/namespace'
 require 'azure'
 require 'tmpdir'
-require 'pry'
 
 # Logstash outout plugin that uploads the logs to Azure blobs.
 # The logs are stored on local temporary file which is uploaded as a blob
@@ -32,7 +29,7 @@ require 'pry'
 #   upload que size
 # @!attribute upload workers count
 #   how much workers for uplaod
-# @!attribute rotation_strategy
+# @!attribute rotation_strategy_val
 #   what will be considered to do the tmeporary file rotation
 # @!attribute tags
 #   tags for the files
@@ -40,7 +37,7 @@ require 'pry'
 #   the encoding of the files
 # @example basic configuration
 #    output {
-#      logstash_output_azure {
+#      azure {
 #        storage_account_name => "my-azure-account"    # required
 #        storage_access_key => "my-super-secret-key"   # required
 #        contianer_name => "my-contianer"              # required
@@ -51,15 +48,14 @@ require 'pry'
 #        prefix => "a_prefix"                          # optional
 #        upload_queue_size => 2                        # optional
 #        upload_workers_count => 1                     # optional
-#        rotation_strategy => "size_and_time"          # optional
+#        rotation_strategy_val => "size_and_time"      # optional
 #        tags => []                                    # optional
 #        encoding => "none"                            # optional
 #      }
 #    }
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   # name for the namespace under output for logstash configuration
-  config_name "azure"
-
+  config_name 'azure'
 
   require 'logstash/outputs/blob/writable_directory_validator'
   require 'logstash/outputs/blob/path_validator'
@@ -71,14 +67,11 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   require 'logstash/outputs/blob/uploader'
   require 'logstash/outputs/blob/file_repository'
 
-  PREFIX_KEY_NORMALIZE_CHARACTER = "_"
+  PREFIX_KEY_NORMALIZE_CHARACTER = '_'.freeze
   PERIODIC_CHECK_INTERVAL_IN_SECONDS = 15
-  CRASH_RECOVERY_THREADPOOL = Concurrent::ThreadPoolExecutor.new({
-                                                                   :min_threads => 1,
-                                                                   :max_threads => 2,
-                                                                   :fallback_policy => :caller_runs
-                                                                 })
-
+  CRASH_RECOVERY_THREADPOOL = Concurrent::ThreadPoolExecutor.new(min_threads: 1,
+                                                                 max_threads: 2,
+                                                                 fallback_policy: :caller_runs)
 
   # azure contianer
   config :storage_account_name, validate: :string, required: false
@@ -97,15 +90,13 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   config :prefix, validate: :string, default: ''
   config :upload_queue_size, validate: :number, default: 2 * (Concurrent.processor_count * 0.25).ceil
   config :upload_workers_count, validate: :number, default: (Concurrent.processor_count * 0.5).ceil
-  config :rotation_strategy, validate: %w[size_and_time size time], default: 'size_and_time'
-  config :tags, :validate => :array, :default => []
-  config :encoding, :validate => ["none", "gzip"], :default => "none"
+  config :rotation_strategy_val, validate: %w[size_and_time size time], default: 'size_and_time'
+  config :tags, validate: :array, default: []
+  config :encoding, validate: %w[none gzip], default: 'none'
 
-  attr_accessor :storage_account_name, :storage_access_key,:container_name,
-    :size_file,:time_file,:restore,:temporary_directory,:prefix,:upload_queue_size,
-    :upload_workers_count,:rotation_strategy,:tags,:encoding
-
-  public
+  attr_accessor :storage_account_name, :storage_access_key, :container_name,
+                :size_file, :time_file, :restore, :temporary_directory, :prefix, :upload_queue_size,
+                :upload_workers_count, :rotation_strategy_val, :tags, :encoding
 
   # initializes the +LogstashAzureBlobOutput+ instances
   # validates all config parameters
@@ -113,16 +104,16 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   def register
     unless @prefix.empty?
       unless PathValidator.valid?(prefix)
-        raise LogStash::ConfigurationError, "Prefix must not contains: #{PathValidator::INVALID_CHARACTERS}"
+        raise LogStash::ConfigurationError.new("Prefix must not contains: #{PathValidator::INVALID_CHARACTERS}")
       end
     end
 
     unless WritableDirectoryValidator.valid?(@temporary_directory)
-      raise LogStash::ConfigurationError, "Logstash must have the permissions to write to the temporary directory: #{@temporary_directory}"
+      raise LogStash::ConfigurationError.new("Logstash must have the permissions to write to the temporary directory: #{@temporary_directory}")
     end
 
-    if @time_file.nil? && @size_file.nil? || @size_file == 0 && @time_file == 0
-      raise LogStash::ConfigurationError, 'at least one of time_file or size_file set to a value greater than 0'
+    if @time_file.nil? && @size_file.nil? || @size_file.zero? && @time_file.zero?
+      raise LogStash::ConfigurationError.new('at least one of time_file or size_file set to a value greater than 0')
     end
 
     @file_repository = FileRepository.new(@tags, @encoding, @temporary_directory)
@@ -138,7 +129,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
     restore_from_crash if @restore
     start_periodic_check if @rotation.needs_periodic?
-  end # def register
+  end
 
   # Receives multiple events and check if there is space in temporary directory
   # @param events_and_encoded [Object]
@@ -184,24 +175,18 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     @crash_uploader.stop if @restore # we might have still work to do for recovery so wait until we are done
   end
 
-
   # Validates and normalize prefix key
   # @param prefix_key [String]
   def normalize_key(prefix_key)
     prefix_key.gsub(PathValidator.matches_re, PREFIX_KEY_NORMALIZE_CHARACTER)
   end
 
- # def upload_options
- #   {
- #   }
- # end
-
   # checks periodically the tmeporary file if it needs to be rotated
   def start_periodic_check
-    @logger.debug("Start periodic rotation check")
+    @logger.debug('Start periodic rotation check')
 
-    @periodic_check = Concurrent::TimerTask.new(:execution_interval => PERIODIC_CHECK_INTERVAL_IN_SECONDS) do
-      @logger.debug("Periodic check for stale files")
+    @periodic_check = Concurrent::TimerTask.new(execution_interval: PERIODIC_CHECK_INTERVAL_IN_SECONDS) do
+      @logger.debug('Periodic check for stale files')
 
       rotate_if_needed(@file_repository.keys)
     end
@@ -219,17 +204,17 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     Azure.config.storage_account_name = storage_account_name
     Azure.config.storage_access_key = storage_access_key
     azure_blob_service = Azure::Blob::BlobService.new
-    list = azure_blob_service.list_containers()
+    list = azure_blob_service.list_containers
     list.each do |item|
       @container = item if item.name == container_name
     end
 
     azure_blob_service.create_container(container_name) unless @container
-    return azure_blob_service
+    azure_blob_service
   end
-  
+
   # check if it needs to rotate according to rotation policy and rotates it if it needs
-  # @param prefixes [String] 
+  # @param prefixes [String]
   def rotate_if_needed(prefixes)
     prefixes.each do |prefix|
       # Each file access is thread safe,
@@ -239,10 +224,10 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
         temp_file = factory.current
 
         if @rotation.rotate?(temp_file)
-          @logger.debug("Rotate file",
-                        :strategy => @rotation.class.name,
-                        :key => temp_file.key,
-                        :path => temp_file.path)
+          @logger.debug('Rotate file',
+                        strategy: @rotation.class.name,
+                        key: temp_file.key,
+                        path: temp_file.path)
 
           upload_file(temp_file)
           factory.rotate!
@@ -253,63 +238,46 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
 
   # uploads the file using the +Uploader+
   def upload_file(temp_file)
-    @logger.debug("Queue for upload", :path => temp_file.path)
+    @logger.debug('Queue for upload', path: temp_file.path)
 
     # if the queue is full the calling thread will be used to upload
     temp_file.close # make sure the content is on disk
-    if temp_file.size > 0
+    unless temp_file.empty? # rubocop:disable GuardClause
       @uploader.upload_async(temp_file,
-                             :on_complete => method(:clean_temporary_file),
-                             :upload_options => upload_options )
+                             on_complete: method(:clean_temporary_file),
+                             upload_options: upload_options)
     end
   end
 
   # creates an instance for the rotation strategy
   def rotation_strategy
-    case @rotation_strategy
-    when "size"
+    case @rotation_strategy_val
+    when 'size'
       SizeRotationPolicy.new(size_file)
-    when "time"
+    when 'time'
       TimeRotationPolicy.new(time_file)
-    when "size_and_time"
+    when 'size_and_time'
       SizeAndTimeRotationPolicy.new(size_file, time_file)
     end
   end
 
   # Cleans the temporary files after it is uploaded to azure blob
   def clean_temporary_file(file)
-    @logger.debug("Removing temporary file", :file => file.path)
+    @logger.debug('Removing temporary file', file: file.path)
     file.delete!
   end
-
 
   # uploads files if there was a crash before
   def restore_from_crash
     @crash_uploader = Uploader.new(blob_container_resource, container_name, @logger, CRASH_RECOVERY_THREADPOOL)
 
     temp_folder_path = Pathname.new(@temporary_directory)
-    Dir.glob(::File.join(@temporary_directory, "**/*"))
-      .select { |file| ::File.file?(file) }
-      .each do |file|
+    Dir.glob(::File.join(@temporary_directory, '**/*'))
+       .select { |file| ::File.file?(file) }
+       .each do |file|
       temp_file = TemporaryFile.create_from_existing_file(file, temp_folder_path)
-      @logger.debug("Recovering from crash and uploading", :file => temp_file.path)
-      @crash_uploader.upload_async(temp_file, :on_complete => method(:clean_temporary_file), :upload_options => upload_options)
+      @logger.debug('Recovering from crash and uploading', file: temp_file.path)
+      @crash_uploader.upload_async(temp_file, on_complete: method(:clean_temporary_file), upload_options: upload_options)
     end
   end
-
-
-  public
-  #endpoint to azure blob storage
-  def receive(event)
-    azure_login
-    azure_blob_service = Azure::Blob::BlobService.new
-    containers = azure_blob_service.list_containers
-    blob = azure_blob_service.create_block_blob(containers[0].name, event.timestamp.to_s, event.to_json)
-  end # def event
-
-  # inputs the credentials to the azure gem to log in and use azure API
-  def azure_login
-    Azure.config.storage_account_name ||= storage_account_name
-    Azure.config.storage_access_key ||= storage_access_key
-  end # def azure_login
-end # class LogStash::Outputs::LogstashAzureBlobOutput
+end

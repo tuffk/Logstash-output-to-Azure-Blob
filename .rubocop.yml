@@ -1,0 +1,77 @@
+AllCops:
+  DisplayCopNames: true
+  Include:
+    - '**/Rakefile'
+    - '**/config.ru'
+  Exclude:
+    - '**/Guardfile'
+    - '**/Capfile'
+    - '**/Gemfile'
+    - 'bin/**/*'
+    - 'config/**/*'
+    - 'db/**/*'
+    - 'script/**/*'
+    - !ruby/regexp /old_and_unused\.rb$/
+
+Rails:
+  Enabled: true
+
+# Commonly used screens these days easily fit more than 80 characters.
+Metrics/LineLength:
+  Max: 150
+
+Metrics/ModuleLength:
+  Enabled: false
+
+# Too short methods lead to extraction of single-use methods, which can make
+# the code easier to read (by naming things), but can also clutter the class
+Metrics/MethodLength:
+  Max: 40
+
+Metrics/BlockLength:
+  Enabled: false
+
+# The guiding principle of classes is SRP, SRP can't be accurately measured by LoC
+Metrics/ClassLength:
+  Max: 1500
+
+# Refactor to remove this issues
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+# TODO: Remove in the future has false positives
+Style/MixinGrouping:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false
+
+Style/RaiseArgs:
+  EnforcedStyle: compact
+
+Lint/AmbiguousBlockAssociation:
+  Enabled: false
+
+# Removes string freeze requirement
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# nested class
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# generic error habdling
+Lint/RescueWithoutErrorClass:
+  Enabled: false
+
+Rails/TimeZone:
+  Enabled: false
