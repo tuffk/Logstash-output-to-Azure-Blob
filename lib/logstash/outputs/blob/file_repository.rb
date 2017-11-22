@@ -1,8 +1,8 @@
-# encoding: utf-8
-require "java"
-require "concurrent"
-require "concurrent/timer_task"
-require "logstash/util"
+
+require 'java'
+require 'concurrent'
+require 'concurrent/timer_task'
+require 'logstash/util'
 
 ConcurrentHashMap = java.util.concurrent.ConcurrentHashMap
 
@@ -17,7 +17,6 @@ module LogStash
         # Ensure that all access or work done
         # on a factory is threadsafe
         class PrefixedValue
- 
           # initialize the factory
           def initialize(file_factory, stale_time)
             @file_factory = file_factory
@@ -25,48 +24,51 @@ module LogStash
             @stale_time = stale_time
           end
 
-	  # activate the lock
+          # activate the lock
           def with_lock
-            @lock.synchronize {
+            @lock.synchronize do
               yield @file_factory
-            }
+            end
           end
-	  
-	  # boolean method
+
+          # boolean method
           def stale?
-            with_lock { |factory| factory.current.size == 0 && (Time.now - factory.current.ctime > @stale_time) }
+            with_lock { |factory| factory.current.size.zero? && (Time.now - factory.current.ctime > @stale_time) }
           end
-	  # return this class
-          def apply(prefix)
-            return self
+
+          # return this class
+          def apply(_prefix)
+            self
           end
-	  # delete the current factory
+
+          # delete the current factory
           def delete!
-            with_lock{ |factory| factory.current.delete! }
+            with_lock { |factory| factory.current.delete! }
           end
         end
 
         # class for initializing the repo manager
         class FactoryInitializer
-	  # initializes the class
+          # initializes the class
           def initialize(tags, encoding, temporary_directory, stale_time)
             @tags = tags
             @encoding = encoding
             @temporary_directory = temporary_directory
             @stale_time = stale_time
           end
-	 # applies the prefix key
+
+          # applies the prefix key
           def apply(prefix_key)
             PrefixedValue.new(TemporaryFileFactory.new(prefix_key, @tags, @encoding, @temporary_directory), @stale_time)
           end
         end
-	# initializes the class with more variables
+        # initializes the class with more variables
         def initialize(tags, encoding, temporary_directory,
                        stale_time = DEFAULT_STALE_TIME_SECS,
                        sweeper_interval = DEFAULT_STATE_SWEEPER_INTERVAL_SECS)
           # The path need to contains the prefix so when we start
           # logtash after a crash we keep the remote structure
-          @prefixed_factories =  ConcurrentHashMap.new
+          @prefixed_factories = ConcurrentHashMap.new
 
           @sweeper_interval = sweeper_interval
 
@@ -74,13 +76,13 @@ module LogStash
 
           start_stale_sweeper
         end
-	
-	# gets the key set
+
+        # gets the key set
         def keys
           @prefixed_factories.keySet
         end
-	 
-	# with lock for each file
+
+        # with lock for each file
         def each_files
           @prefixed_factories.elements.each do |prefixed_file|
             prefixed_file.with_lock { |factory| yield factory.current }
@@ -91,38 +93,42 @@ module LogStash
         def get_factory(prefix_key)
           @prefixed_factories.computeIfAbsent(prefix_key, @factory_initializer).with_lock { |factory| yield factory }
         end
-	
-	# gets file from prefix_key
+
+        # gets file from prefix_key
         def get_file(prefix_key)
           get_factory(prefix_key) { |factory| yield factory.current }
         end
 
-	# stops. shutdown
+        # stops. shutdown
         def shutdown
           stop_stale_sweeper
         end
-	# gets factory's size
+
+        # gets factory's size
         def size
           @prefixed_factories.size
         end
-	# remove the stale given key and value
+
+        # remove the stale given key and value
         def remove_stale(k, v)
-          if v.stale?
+          if v.stale? # rubocop:disable Style/GuardClause
             @prefixed_factories.remove(k, v)
             v.delete!
           end
         end
-	# starts the stale sweeper
-        def start_stale_sweeper
-          @stale_sweeper = Concurrent::TimerTask.new(:execution_interval => @sweeper_interval) do
-            LogStash::Util.set_thread_name("LogstashAzureBlobOutput, Stale factory sweeper")
 
-            @prefixed_factories.forEach{|k,v| remove_stale(k,v)}
+        # starts the stale sweeper
+        def start_stale_sweeper
+          @stale_sweeper = Concurrent::TimerTask.new(execution_interval: @sweeper_interval) do
+            LogStash::Util.set_thread_name('LogstashAzureBlobOutput, Stale factory sweeper')
+
+            @prefixed_factories.forEach { |k, v| remove_stale(k, v) }
           end
 
           @stale_sweeper.execute
         end
-	# stops the stale sweeper
+
+        # stops the stale sweeper
         def stop_stale_sweeper
           @stale_sweeper.shutdown
         end

@@ -1,7 +1,6 @@
-# encoding: utf-8
-require "thread"
-require "forwardable"
-require "fileutils"
+require 'thread'
+require 'forwardable'
+require 'fileutils'
 
 module LogStash
   module Outputs
@@ -15,8 +14,8 @@ module LogStash
         def_delegators :@fd, :path, :write, :close, :fsync
 
         attr_reader :fd
-	
-	# initialize the class
+
+        # initialize the class
         def initialize(key, fd, temp_path)
           @fd = fd
           @key = key
@@ -24,31 +23,28 @@ module LogStash
           @created_at = Time.now
         end
 
-	# gets the created at time
+        # gets the created at time
         def ctime
           @created_at
         end
-	
-	# gets path to temporary directory
-        def temp_path
-          @temp_path
-        end
-	
-	# gets the size of file
+
+        # gets path to temporary directory
+        attr_reader :temp_path
+
+        # gets the size of file
         def size
           # Use the fd size to get the accurate result,
           # so we dont have to deal with fsync
           # if the file is close we will use the File::size
-          begin
-            @fd.size
-          rescue IOError
-            ::File.size(path)
-          end
+
+          @fd.size
+        rescue IOError
+          ::File.size(path)
         end
 
-	# gets the key
+        # gets the key
         def key
-          @key.gsub(/^\//, "")
+          @key.gsub(/^\//, '')
         end
 
         # Each temporary file is made inside a directory named with an UUID,
@@ -56,24 +52,28 @@ module LogStash
         # we delete the root of the UUID, using a UUID also remove the risk of deleting unwanted file, it acts as
         # a sandbox.
         def delete!
-          @fd.close rescue IOError # force close anyway
-          FileUtils.rm_r(@temp_path, :secure => true)
+          begin
+            @fd.close
+          rescue
+            IOError
+          end
+          FileUtils.rm_r(@temp_path, secure: true)
         end
 
-	# boolean method to determine if the file is empty
+        # boolean method to determine if the file is empty
         def empty?
-          size == 0
+          size.zero?
         end
 
-	# creates the temporary file in an existing temporary directory from existing file
-	# @param file_path [String] path to the file
-	# @param temporary_folder [String] path to the temporary folder
+        # creates the temporary file in an existing temporary directory from existing file
+        # @param file_path [String] path to the file
+        # @param temporary_folder [String] path to the temporary folder
         def self.create_from_existing_file(file_path, temporary_folder)
           key_parts = Pathname.new(file_path).relative_path_from(temporary_folder).to_s.split(::File::SEPARATOR)
 
-          TemporaryFile.new(key_parts.slice(1, key_parts.size).join("/"),
-                         ::File.open(file_path, "r"),
-                         ::File.join(temporary_folder, key_parts.slice(0, 1)))
+          TemporaryFile.new(key_parts.slice(1, key_parts.size).join('/'),
+                            ::File.open(file_path, 'r'),
+                            ::File.join(temporary_folder, key_parts.slice(0, 1)))
         end
       end
     end

@@ -1,7 +1,6 @@
-# encoding: utf-8
-require "logstash/devutils/rspec/spec_helper"
-require "logstash/outputs/blob/size_and_time_rotation_policy"
-require "logstash/outputs/blob/temporary_file"
+require 'logstash/devutils/rspec/spec_helper'
+require 'logstash/outputs/blob/size_and_time_rotation_policy'
+require 'logstash/outputs/blob/temporary_file'
 
 describe LogStash::Outputs::LogstashAzureBlobOutput::SizeAndTimeRotationPolicy do
   let(:file_size) { 10 }
@@ -10,37 +9,37 @@ describe LogStash::Outputs::LogstashAzureBlobOutput::SizeAndTimeRotationPolicy d
 
   let(:temporary_directory) { Stud::Temporary.pathname }
   let(:temporary_file) { Stud::Temporary.file }
-  let(:name) { "foobar" }
-  let(:content) { "hello" * 1000 }
+  let(:name) { 'foobar' }
+  let(:content) { 'hello' * 1000 }
   let(:file) { LogStash::Outputs::LogstashAzureBlobOutput::TemporaryFile.new(name, temporary_file, temporary_directory) }
 
-  it "raises an exception if the `time_file` is set to 0" do
+  it 'raises an exception if the `time_file` is set to 0' do
     expect { described_class.new(100, 0) }.to raise_error(LogStash::ConfigurationError, /time_file/)
   end
 
-  it "raises an exception if the `time_file` is < 0" do
+  it 'raises an exception if the `time_file` is < 0' do
     expect { described_class.new(100, -100) }.to raise_error(LogStash::ConfigurationError, /time_file/)
   end
 
-  it "raises an exception if the `size_file` is 0" do
+  it 'raises an exception if the `size_file` is 0' do
     expect { described_class.new(0, 100) }.to raise_error(LogStash::ConfigurationError, /size_file/)
   end
 
-  it "raises an exception if the `size_file` is < 0" do
+  it 'raises an exception if the `size_file` is < 0' do
     expect { described_class.new(-100, 100) }.to raise_error(LogStash::ConfigurationError, /size_file/)
   end
 
-  it "returns true if the size on disk is higher than the `file_size`" do
+  it 'returns true if the size on disk is higher than the `file_size`' do
     file.write(content)
     file.fsync
     expect(subject.rotate?(file)).to be_truthy
   end
 
-  it "returns false if the size is inferior than the `file_size`" do
+  it 'returns false if the size is inferior than the `file_size`' do
     expect(subject.rotate?(file)).to be_falsey
   end
 
-  context "when the size of the file is superior to 0" do
+  context 'when the size of the file is superior to 0' do
     let(:file_size) { 10000 }
 
     before :each do
@@ -48,29 +47,29 @@ describe LogStash::Outputs::LogstashAzureBlobOutput::SizeAndTimeRotationPolicy d
       file.fsync
     end
 
-    it "returns true if the file old enough" do
-      allow(file).to receive(:ctime).and_return(Time.now - (time_file * 2 * 60) )
+    it 'returns true if the file old enough' do
+      allow(file).to receive(:ctime).and_return(Time.now - (time_file * 2 * 60))
       expect(subject.rotate?(file)).to be_truthy
     end
 
-    it "returns false is not old enough" do
+    it 'returns false is not old enough' do
       allow(file).to receive(:ctime).and_return(Time.now + time_file * 10)
       expect(subject.rotate?(file)).to be_falsey
     end
   end
 
-  context "When the size of the file is 0" do
-    it "returns false if the file old enough" do
+  context 'When the size of the file is 0' do
+    it 'returns false if the file old enough' do
       expect(subject.rotate?(file)).to be_falsey
     end
 
-    it "returns false is not old enough" do
+    it 'returns false is not old enough' do
       expect(subject.rotate?(file)).to be_falsey
     end
   end
 
-  context "#needs_periodic?" do
-    it "return true" do
+  context '#needs_periodic?' do
+    it 'return true' do
       expect(subject.needs_periodic?).to be_truthy
     end
   end
