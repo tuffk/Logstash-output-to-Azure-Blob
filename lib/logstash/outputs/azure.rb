@@ -244,8 +244,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     temp_file.close # make sure the content is on disk
     unless temp_file.empty? # rubocop:disable GuardClause
       @uploader.upload_async(temp_file,
-                             on_complete: method(:clean_temporary_file),
-                             upload_options: upload_options)
+                             on_complete: method(:clean_temporary_file))
     end
   end
 
@@ -277,7 +276,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
        .each do |file|
       temp_file = TemporaryFile.create_from_existing_file(file, temp_folder_path)
       @logger.debug('Recovering from crash and uploading', file: temp_file.path)
-      @crash_uploader.upload_async(temp_file, on_complete: method(:clean_temporary_file), upload_options: upload_options)
+      @crash_uploader.upload_async(temp_file, on_complete: method(:clean_temporary_file))
     end
   end
 end
