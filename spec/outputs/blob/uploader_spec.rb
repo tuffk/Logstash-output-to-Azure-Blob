@@ -11,7 +11,6 @@ describe LogStash::Outputs::LogstashAzureBlobOutput::Uploader do
   let(:temporary_directory) { Stud::Temporary.pathname }
   let(:temporary_file) { Stud::Temporary.file }
   let(:storage_access_key) { 'foobar' }
-  let(:upload_options) { {} }
   let(:threadpool) do
     Concurrent::ThreadPoolExecutor.new(min_threads: 1,
                                        max_threads: 8,

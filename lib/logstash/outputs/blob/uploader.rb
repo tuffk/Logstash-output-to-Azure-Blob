@@ -13,7 +13,7 @@ module LogStash
                                                                 max_queue: 1,
                                                                 fallback_policy: :caller_runs)
 
-        attr_accessor :upload_options, :logger, :container_name, :blob_account
+        attr_accessor :logger, :container_name, :blob_account
 
         # Initializes the class
         # @param blob_account [Object] endpoint to azure gem
@@ -35,7 +35,6 @@ module LogStash
 
         # Uploads the file to the container
         def upload(file, options = {})
-          upload_options = options.fetch(:upload_options, {})
 
           begin
             content = Object::File.open(file.path, 'rb').read
