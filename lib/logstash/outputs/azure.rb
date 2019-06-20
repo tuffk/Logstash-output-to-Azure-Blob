@@ -56,6 +56,7 @@ require 'tmpdir'
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   # name for the namespace under output for logstash configuration
   config_name 'azure'
+  default :codec, "line"
 
   require 'logstash/outputs/blob/writable_directory_validator'
   require 'logstash/outputs/blob/path_validator'
