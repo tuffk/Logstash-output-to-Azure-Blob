@@ -13,7 +13,7 @@ require 'tmpdir'
 #   Azure storage account name (required) - found under the access keys tab
 # @!attribute storage_access_key
 #   Azure storage account access key (required) - found under the access keys tab
-# @!attribute contianer_name
+# @!attribute container_name
 #   Blob container to uplaod blobs to (required)
 # @!attribute size_file
 #   File size to use for local tmeporary File
@@ -40,7 +40,7 @@ require 'tmpdir'
 #      azure {
 #        storage_account_name => "my-azure-account"    # required
 #        storage_access_key => "my-super-secret-key"   # required
-#        contianer_name => "my-contianer"              # required
+#        container_name => "my-contianer"              # required
 #        size_file => 1024*1024*5                      # optional
 #        time_file => 10                               # optional
 #        restore => true                               # optional
