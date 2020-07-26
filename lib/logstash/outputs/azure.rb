@@ -40,7 +40,7 @@ require 'tmpdir'
 #      azure {
 #        storage_account_name => "my-azure-account"    # required
 #        storage_access_key => "my-super-secret-key"   # required
-#        container_name => "my-contianer"              # required
+#        container_name => "my-container"              # required
 #        size_file => 1024*1024*5                      # optional
 #        time_file => 10                               # optional
 #        restore => true                               # optional
@@ -74,7 +74,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
                                                                  max_threads: 2,
                                                                  fallback_policy: :caller_runs)
 
-  # azure contianer
+  # azure container
   config :storage_account_name, validate: :string, required: false
 
   # azure key
@@ -199,7 +199,7 @@ class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
     @periodic_check.shutdown
   end
 
-  # login to azure cloud using azure gem and create the contianer if it doesn't exist
+  # login to azure cloud using azure gem and create the container if it doesn't exist
   # @return [Object] the azure_blob_service object, which is the endpoint to azure gem
   def blob_container_resource
     Azure.config.storage_account_name = storage_account_name
