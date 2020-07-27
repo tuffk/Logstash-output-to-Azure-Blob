@@ -53,6 +53,10 @@ require 'tmpdir'
 #        encoding => "none"                            # optional
 #      }
 #    }
+# 
+# @To make the plugin available in your Logstash environment, run the following command:
+# bin/logstash-plugin install logstash-output-azure
+#
 class LogStash::Outputs::LogstashAzureBlobOutput < LogStash::Outputs::Base
   # name for the namespace under output for logstash configuration
   config_name 'azure'
